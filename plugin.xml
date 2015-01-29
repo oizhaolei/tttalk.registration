@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<plugin>
+    <class>org.tttalk.openfire.plugin.RegistrationPlugin</class>
+    <name>TTTalk Registration</name>
+    <description>Performs various actions whenever a new user account is created.</description>
+    <author>tttalk.org</author>
+    <version>1.0.0</version>
+    <date>01/29/2015</date>
+    <minServerVersion>3.9.0</minServerVersion>
+	
+	<adminconsole>
+		<tab id="tab-users">
+			<sidebar id="sidebar-users">
+				<item id="registration-props-form" name="TTTalk Registration"
+						url="registration-props-form.jsp"
+						description="After User Registration" />
+			</sidebar>
+        </tab>
+    </adminconsole>
+</plugin>
