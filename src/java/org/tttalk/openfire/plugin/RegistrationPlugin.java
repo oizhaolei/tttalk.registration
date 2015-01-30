@@ -46,6 +46,7 @@ public class RegistrationPlugin implements Plugin {
 			.getLogger(RegistrationPlugin.class);
 
 	private static final String TTTALK_USER_TRANSLATOR = "tttalk.user.translator";
+	//TODO
 	private static final String TTTALK_USER_SERVICE = "tttalk.user.service";
 
 	private RegistrationUserEventListener listener = new RegistrationUserEventListener();
@@ -99,7 +100,7 @@ public class RegistrationPlugin implements Plugin {
 					addFriendToUser(user, translator);
 					addFriendToUser(translator, user);
 
-					router.route(createServerMessage(user.getName(), null,
+					router.route(createServerMessage(user.getName(), "notice",
 							translatorName + " add you as friend."));
 				} catch (Exception e) {
 					e.printStackTrace();
