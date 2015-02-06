@@ -30,18 +30,21 @@ public class RegistrationPlugin implements Plugin {
 			.getLogger(RegistrationPlugin.class);
 
 	private static final String TTTALK_USER_TRANSLATOR = "tttalk.user.translator";
-	//TODO
+	// TODO
 	private static final String TTTALK_USER_SERVICE = "tttalk.user.service";
+	private static final String TTTALK_USER_VOLUNTEER = "tttalk.user.volunteer";
+	private final String defaultFriendsList[] = new String[] {
+			TTTALK_USER_TRANSLATOR, TTTALK_USER_SERVICE, TTTALK_USER_VOLUNTEER };
 
 	private RegistrationUserEventListener listener = new RegistrationUserEventListener();
 
-	private String serverName;
+	private final String serverName;
 	private JID serverAddress;
 	private MessageRouter router;
 
-	private UserManager userManager;
+	private final UserManager userManager;
 
-	private XMPPServer server;
+	private final XMPPServer server;
 
 	public RegistrationPlugin() {
 		server = XMPPServer.getInstance();
@@ -56,9 +59,11 @@ public class RegistrationPlugin implements Plugin {
 		UserEventDispatcher.addListener(listener);
 	}
 
+	@Override
 	public void initializePlugin(PluginManager manager, File pluginDirectory) {
 	}
 
+	@Override
 	public void destroyPlugin() {
 		UserEventDispatcher.removeListener(listener);
 		serverAddress = null;
@@ -74,28 +79,42 @@ public class RegistrationPlugin implements Plugin {
 		return JiveGlobals.getProperty(TTTALK_USER_TRANSLATOR);
 	}
 
+	public String getVolunteer() {
+		return JiveGlobals.getProperty(TTTALK_USER_VOLUNTEER);
+	}
+
+	public String getService() {
+		return JiveGlobals.getProperty(TTTALK_USER_SERVICE);
+	}
+
 	private class RegistrationUserEventListener implements UserEventListener {
+		@Override
 		public void userCreated(User user, Map<String, Object> params) {
-			String translatorName = getTranslator();
-			if (translatorName != null && translatorName.trim().length() > 0) {
-				try {
-					User translator = userManager.getUser(translatorName);
+			for (int i = 0; i < defaultFriendsList.length; i++) {
+				String friendName = JiveGlobals
+						.getProperty(defaultFriendsList[i]);
+				if (friendName != null && friendName.trim().length() > 0) {
+					try {
+						User translator = userManager.getUser(friendName);
 
-					addFriendToUser(user, translator);
-					addFriendToUser(translator, user);
+						addFriendToUser(user, translator);
+						addFriendToUser(translator, user);
 
-					router.route(createServerMessage(user.getName(), "notice",
-							translatorName + " add you as friend."));
-				} catch (Exception e) {
-					e.printStackTrace();
-					Log.error(e.getMessage(), e);
+						router.route(createServerMessage(user.getName(),
+								"notice", friendName + " add you as friend."));
+					} catch (Exception e) {
+						e.printStackTrace();
+						Log.error(e.getMessage(), e);
+					}
 				}
 			}
 		}
 
+		@Override
 		public void userDeleting(User user, Map<String, Object> params) {
 		}
 
+		@Override
 		public void userModified(User user, Map<String, Object> params) {
 		}
 
