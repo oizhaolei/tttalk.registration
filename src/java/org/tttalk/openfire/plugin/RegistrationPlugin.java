@@ -1,6 +1,7 @@
 package org.tttalk.openfire.plugin;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.jivesoftware.openfire.MessageRouter;
@@ -29,10 +30,10 @@ public class RegistrationPlugin implements Plugin {
 	private static final Logger Log = LoggerFactory
 			.getLogger(RegistrationPlugin.class);
 
-	private static final String TTTALK_USER_TRANSLATOR = "tttalk.user.translator";
+	public static final String TTTALK_USER_TRANSLATOR = "tttalk.user.translator";
 	// TODO
-	private static final String TTTALK_USER_SERVICE = "tttalk.user.service";
-	private static final String TTTALK_USER_VOLUNTEER = "tttalk.user.volunteer";
+	public static final String TTTALK_USER_SERVICE = "tttalk.user.service";
+	public static final String TTTALK_USER_VOLUNTEER = "tttalk.user.volunteer";
 	private final String defaultFriendsList[] = new String[] {
 			TTTALK_USER_TRANSLATOR, TTTALK_USER_SERVICE, TTTALK_USER_VOLUNTEER };
 
@@ -138,4 +139,30 @@ public class RegistrationPlugin implements Plugin {
 				server.createJID(friend.getUsername(), null), true, true);
 	}
 
+	public Map<String, String> createGlobalProperties(String translator,
+			String service, String volunteer) {
+		Map<String, String> errors = new HashMap<String, String>();
+		Map<String, String> properties = new HashMap<String, String>();
+		properties.put(TTTALK_USER_TRANSLATOR, translator);
+		properties.put(TTTALK_USER_SERVICE, service);
+		properties.put(TTTALK_USER_VOLUNTEER, volunteer);
+
+		for (Map.Entry<String, String> entry : properties.entrySet()) {
+			String key = entry.getKey();
+			String value = entry.getValue();
+			if (value == null || value.trim().length() < 1) {
+				JiveGlobals.deleteProperty(key);
+			} else {
+				try {
+					User user = XMPPServer.getInstance().getUserManager()
+							.getUser(value);
+					JiveGlobals.setProperty(key, value);
+				} catch (Exception e) {
+					errors.put(key, "userNotFound");
+				}
+			}
+		}
+
+		return errors;
+	}
 }
