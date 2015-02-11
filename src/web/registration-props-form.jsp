@@ -38,7 +38,7 @@
     <body>
 
 <form action="registration-props-form.jsp?savetranslator=true" method="post">
-<div class="jive-contentBoxHeader">Translator</div>
+<div class="jive-contentBoxHeader">User Registration</div>
 <div class="jive-contentBox">
     <table cellpadding="3" cellspacing="0" border="0" width="100%">
     <tbody>
