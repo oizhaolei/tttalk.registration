@@ -19,23 +19,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xmpp.packet.JID;
 import org.xmpp.packet.Message;
-
-/**
- * Registration plugin.
- *
- * @author Ryan Graham.
- */
 public class RegistrationPlugin implements Plugin {
 
 	private static final Logger Log = LoggerFactory
 			.getLogger(RegistrationPlugin.class);
 
 	public static final String TTTALK_USER_TRANSLATOR = "tttalk.user.translator";
-	// TODO
-	public static final String TTTALK_USER_SERVICE = "tttalk.user.service";
+
 	public static final String TTTALK_USER_VOLUNTEER = "tttalk.user.volunteer";
-	private final String defaultFriendsList[] = new String[] {
-			TTTALK_USER_TRANSLATOR, TTTALK_USER_SERVICE, TTTALK_USER_VOLUNTEER };
 
 	private RegistrationUserEventListener listener = new RegistrationUserEventListener();
 
@@ -73,7 +64,11 @@ public class RegistrationPlugin implements Plugin {
 	}
 
 	public void setTranslator(String translator) {
-		JiveGlobals.setProperty(TTTALK_USER_TRANSLATOR, translator);
+		JiveGlobals.setProperty(TTTALK_USER_TRANSLATOR, translator.trim());
+	}
+
+	public void setVolunteer(String volunteer) {
+		JiveGlobals.setProperty(TTTALK_USER_VOLUNTEER, volunteer.trim());
 	}
 
 	public String getTranslator() {
@@ -84,29 +79,32 @@ public class RegistrationPlugin implements Plugin {
 		return JiveGlobals.getProperty(TTTALK_USER_VOLUNTEER);
 	}
 
-	public String getService() {
-		return JiveGlobals.getProperty(TTTALK_USER_SERVICE);
-	}
-
 	private class RegistrationUserEventListener implements UserEventListener {
 		@Override
 		public void userCreated(User user, Map<String, Object> params) {
-			for (int i = 0; i < defaultFriendsList.length; i++) {
-				String friendName = JiveGlobals
-						.getProperty(defaultFriendsList[i]);
-				if (friendName != null && friendName.trim().length() > 0) {
-					try {
-						User translator = userManager.getUser(friendName);
+			if (isTTTalkUser(user)) {
+				String friendName = getTranslator();
+				makeFriend(user, friendName);
+			} else if (isVolunteerUser(user)) {
+				String friendName = getVolunteer();
+				makeFriend(user, friendName);
 
-						addFriendToUser(user, translator);
-						addFriendToUser(translator, user);
+			}
+		}
 
-						router.route(createServerMessage(user.getName(),
-								"notice", friendName + " add you as friend."));
-					} catch (Exception e) {
-						e.printStackTrace();
-						Log.error(e.getMessage(), e);
-					}
+		private void makeFriend(User user, String friendName) {
+			if (friendName != null && friendName.trim().length() > 0) {
+				try {
+					User friend = userManager.getUser(friendName);
+
+					addFriendToUser(user, friend);
+					addFriendToUser(friend, user);
+
+					router.route(createServerMessage(user.getName(), "notice",
+							friendName + " add you as friend."));
+				} catch (Exception e) {
+					e.printStackTrace();
+					Log.error(e.getMessage(), e);
 				}
 			}
 		}
@@ -132,6 +130,14 @@ public class RegistrationPlugin implements Plugin {
 		return message;
 	}
 
+	public boolean isVolunteerUser(User user) {
+		return user.getName().startsWith("chinatalk_");
+	}
+
+	public boolean isTTTalkUser(User user) {
+		return user.getName().startsWith("volunteer_");
+	}
+
 	public void addFriendToUser(User user, User friend)
 			throws UserAlreadyExistsException, SharedGroupException {
 
@@ -140,11 +146,10 @@ public class RegistrationPlugin implements Plugin {
 	}
 
 	public Map<String, String> createGlobalProperties(String translator,
-			String service, String volunteer) {
+			String volunteer) {
 		Map<String, String> errors = new HashMap<String, String>();
 		Map<String, String> properties = new HashMap<String, String>();
 		properties.put(TTTALK_USER_TRANSLATOR, translator);
-		properties.put(TTTALK_USER_SERVICE, service);
 		properties.put(TTTALK_USER_VOLUNTEER, volunteer);
 
 		for (Map.Entry<String, String> entry : properties.entrySet()) {
