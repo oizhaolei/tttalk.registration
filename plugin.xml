@@ -11,7 +11,7 @@
 	
 	<adminconsole>
 		<tab id="tab-users">
-			<sidebar id="sidebar-users">
+			<sidebar id="tttalk" name="TTTalk">
 				<item id="registration-props-form" name="TTTalk Registration"
 						url="registration-props-form.jsp"
 						description="After User Registration" />
